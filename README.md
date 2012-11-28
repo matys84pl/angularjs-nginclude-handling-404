@@ -1,6 +1,8 @@
 angularjs-nginclude-handling-404
 ====================================
 
+Simple http interceptor that swaps the default error response with custom 404.html 
+when it fails to load the html defined as a source for ng-include.
 
 ## Used libs
 
@@ -8,7 +10,7 @@ angularjs-nginclude-handling-404
 
 ## Usage
 
-Create a 404.html file on your server, the ng-include will use it when fails to load the included html.
+Create a custom 404.html
 
 ## License
 
