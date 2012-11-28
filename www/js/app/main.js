@@ -8,29 +8,39 @@
 angular.module('app', [])
     .config(['$httpProvider', function ($httpProvider) {
 
-    var page404 = "<h2>404 - not found</h2>";
+    var $http,
+        interceptor = ['$q', '$injector', function ($q, $injector) {
 
-    var interceptor = ['$q', function($q) {
-
-        function success(response) {
-            return response;
-        }
-
-        function error(response) {
-            if (response.status === 404 && response.config.url.indexOf(".html")) {
-
-                response.data = page404;
-                response.status = 200;
-
+            function success(response) {
                 return response;
             }
-            return $q.reject(response);
-        }
 
-        return function(promise) {
-            return promise.then(success, error);
-        }
-    }];
+            function error(response) {
+                if (response.status === 404 && response.config.url.indexOf(".html")) {
+
+                    // get $http via $injector because of circular dependency problem
+                    $http = $http || $injector.get('$http');
+
+                    var defer = $q.defer();
+                    $http.get('404.html')
+                        .then(function (result) {
+                            response.status = 200;
+                            response.data = result.data;
+                            defer.resolve(response);
+                        }, function () {
+                            defer.reject(response);
+                        });
+
+                    return defer.promise;// response;
+                } else {
+                    return $q.reject(response);
+                }
+            }
+
+            return function (promise) {
+                return promise.then(success, error);
+            }
+        }];
 
     $httpProvider.responseInterceptors.push(interceptor);
 }]);
